@@ -16,14 +16,14 @@ local drawState = "revolve"
 -- Defining player variables
 local moonX, moonY = halfScreenWidth, halfScreenHeight
 local moonImage = gfx.image.new("images/moon.png")
-local moonMaxX, moonMaxY = moonImage:getSize()
+local moonRadius, _ = moonImage:getSize() / 2
 local moonSprite = gfx.sprite.new(moonImage)
 
 -- Defining applier variables
 local applierX, applierY = halfScreenWidth, halfScreenHeight
-local applierTarget = false
 local applierCos, applierSin = 0, 0
 local applierImage = gfx.image.new("images/circle16.png")
+local applierRadius, _ = applierImage:getSize() / 2
 local applierSprite = gfx.sprite.new(applierImage)
 local applierOffset = 54
 
@@ -42,32 +42,18 @@ local function getSourceTargetAngleComponents(sourceX, sourceY, targetX, targetY
 end
 
 local function moveApplier()
-	-- Get target to move applier towards
-	if not applierTarget then
-		applierCos, applierSin = getSourceTargetAngleComponents(applierX, applierY, moonX, moonY)
-		applierTarget = true
-	end
-
 	-- Update towards that target
 	local crankChange = pd.getCrankChange()
 	applierX += crankChange * applierCos
 	applierY += crankChange * applierSin
 
-	-- Constrain to inside of moon
-	-- If less then start, set to start
-	-- if applierX <= applierDrawStartX then
-	-- 	applierX = applierDrawStartX
-	-- end
-	-- if applierY <= applierDrawStartY then
-	-- 	applierY = applierDrawStartY
-	-- end
-	-- If greater then moon perimeter, set to perimeter
-	-- if applierX >= moonX + moonMaxX / 2 then
-	-- 	applierX = moonX + moonMaxX / 2
-	-- end
-	-- if applierY >= moonY + moonMaxY / 2 then
-	-- 	applierY = moonY + moonMaxY / 2
-	-- end
+	-- Clamp within the moon
+	local distance = math.sqrt((applierX - moonX) ^ 2 + (applierY - moonY) ^ 2)
+	if distance > moonRadius - applierRadius then
+		local cos, sin = getSourceTargetAngleComponents(moonX, moonY, applierX, applierY)
+		applierX = moonX + cos * (moonRadius - applierRadius)
+		applierY = moonY + sin * (moonRadius - applierRadius)
+	end
 
 	applierSprite:moveTo(applierX, applierY)
 end
@@ -77,6 +63,24 @@ local function handleApplier()
 		revolveApplier()
 	elseif drawState == "linear" then
 		moveApplier()
+	end
+end
+
+local function setToRevolve()
+	drawState = "revolve"
+end
+
+local function setToLinear()
+	drawState = "linear"
+	applierCos, applierSin = getSourceTargetAngleComponents(applierX, applierY, moonX, moonY)
+end
+
+function playdate.upButtonDown()
+	-- Swap applierState
+	if drawState == "revolve" then
+		setToLinear()
+	elseif drawState == "linear" then
+		setToRevolve()
 	end
 end
 
@@ -100,19 +104,5 @@ function playdate.update()
 	-- Draw crank indicator if crank is docked
 	if pd.isCrankDocked() then
 		pd.ui.crankIndicator:draw()
-	end
-end
-
-local function resetToRevolve()
-	applierTarget = false
-end
-
-function playdate.upButtonDown()
-	-- Swap applierState
-	if drawState == "revolve" then
-		drawState = "linear"
-	else
-		drawState = "revolve"
-		resetToRevolve()
 	end
 end
