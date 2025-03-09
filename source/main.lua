@@ -3,6 +3,7 @@ import("CoreLibs/graphics")
 import("CoreLibs/sprites")
 import("CoreLibs/ui")
 import("scripts/applier")
+import("scripts/moon")
 
 -- Disable crank sound
 playdate.setCrankSoundsDisabled(true)
@@ -10,38 +11,44 @@ playdate.setCrankSoundsDisabled(true)
 -- Localizing commonly used globals
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
-local screenWidth, screenHeight = playdate.display.getSize()
+local _, screenHeight = playdate.display.getSize()
+
 local state = "play"
 local playState
 
--- Defining player variables
-local applier = Applier()
+-- Images
+local applierImage = gfx.image.new("images/circle8.png")
 local moonImage = gfx.image.new("images/circle64.png")
 local smallMoonImage = gfx.image.new("images/circle32.png")
+
+-- Game variables
+local applier = Applier(applierImage)
+local effectsTable = {}
 local moonRadius = moonImage:getSize() / 2
 local drawMoonX, drawMoonY = moonRadius, screenHeight - moonRadius
-local moonSprite = gfx.sprite.new(moonImage)
+local moon = Moon(moonImage, drawMoonX, drawMoonY, moonRadius)
 
 -- Helper functions
 local function setToDraw()
 	playState = "draw"
 
 	-- Setup applier
+	applier:add()
 	applier:setState("move")
 
 	-- Setup moon
-	moonSprite:clearCollideRect()
-	moonSprite:setImage(moonImage)
-	moonSprite:moveTo(drawMoonX, drawMoonY)
-	moonSprite:add()
+	moon:clearCollideRect()
+	moon:setImage(moonImage)
+	moon:moveTo(drawMoonX, drawMoonY)
+	moon:add()
 end
 
 local function setToGolf()
 	playState = "golf"
 
 	applier:remove()
-	moonSprite:setImage(smallMoonImage)
-	moonSprite:setCollideRect(0, 0, smallMoonImage:getSize())
+	moon:setImage(smallMoonImage)
+	moon:setCollideRect(0, 0, smallMoonImage:getSize())
 end
 
 local function init()
@@ -63,15 +70,20 @@ function playdate.update()
 	if pd.isCrankDocked() then
 		pd.ui.crankIndicator:draw()
 	end
+
+	-- Draw state texts
+	gfx.drawText(playState, 0, 0)
+	gfx.drawText(applier.state, 0, 20)
+	gfx.drawText(applier:getCurrCondiment(), 0, 40)
 end
 
 function playdate.upButtonDown()
 	if playState == "draw" then
 		-- Swap drawState
 		if applier.state == "move" then
-			applier:setState("apply")
+			applier:setApplyState(moon.x, moon.y)
 		elseif applier.state == "apply" then
-			applier:setState("move")
+			applier:setMoveState(effectsTable)
 		end
 	end
 end
