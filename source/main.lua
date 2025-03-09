@@ -6,7 +6,7 @@ import("CoreLibs/ui")
 
 -- Importing other scripts
 import("scripts/applier")
-import("scripts/moon")
+import("scripts/circle")
 import("scripts/drawManager")
 import("scripts/golfManager")
 
@@ -16,22 +16,36 @@ playdate.setCrankSoundsDisabled(true)
 -- Localizing commonly used globals
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
+local _, screenHeight = playdate.display.getSize()
 
--- Game globals
-local playState = "draw"
-local effectsTable = {}
+-- Images
+local applierImage = gfx.image.new("images/circle8.png")
+local bigMoonImage = gfx.image.new("images/circle64.png")
+local smallMoonImage = gfx.image.new("images/circle32.png")
 
 -- Locals
 local gameState = "play"
-local drawManager = DrawManager()
+local playState = "draw"
+local effectsTable = {}
 
-local function setToGolf()
-	playState = "golf"
+-- Applier
+local applier = Applier(applierImage)
 
-	applier:remove()
-	moon:setImage(smallMoonImage)
-	moon:setCollideRect(0, 0, smallMoonImage:getSize())
-end
+-- Moon
+local moonRadius = bigMoonImage:getSize() / 2
+local drawMoonX, drawMoonY = moonRadius, screenHeight - moonRadius
+local moon = Circle(bigMoonImage, drawMoonX, drawMoonY, moonRadius)
+
+-- Ball
+local ballRadius = smallMoonImage:getSize() / 2
+local ball = Circle(smallMoonImage, drawMoonX, drawMoonY, ballRadius)
+
+-- Managers
+local drawManager = DrawManager(applier, moon, drawMoonX, drawMoonY)
+local golfManager = GolfManager(ball)
+
+-- Init
+playState = drawManager:swapToDraw(playState, ball)
 
 -- Main update function
 function playdate.update()
@@ -64,10 +78,9 @@ end
 function playdate.downButtonDown()
 	-- Swap playState
 	if playState == "draw" then
-		-- playState = "golf"
-		-- setToGolf()
+		playState = golfManager:swapToGolf(playState, applier, moon)
 	elseif playState == "golf" then
-		playState = drawManager:initDrawManager(playState)
+		playState = drawManager:swapToDraw(playState, ball)
 	end
 end
 
