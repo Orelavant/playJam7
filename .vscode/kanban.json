@@ -3,17 +3,18 @@
     "cols": [
         {
             "title": "Bugs",
-            "tasks": [],
+            "tasks": [
+                {
+                    "text": "Change recording method (start and end position, instead of crank change - seems inconsistent)\n",
+                    "id": "xv2ms95s86h2a1hdc6bh0slc"
+                }
+            ],
             "id": "a11rko3itb4okjv8jyfber7v",
             "color": "#eb144c"
         },
         {
             "title": "To-Do",
             "tasks": [
-                {
-                    "text": "Change recording method (start and end position, instead of crank change - seems inconsistent, might not be an actual problem on the playdate)\n",
-                    "id": "xv2ms95s86h2a1hdc6bh0slc"
-                },
                 {
                     "text": "Exit draw state by returning the crank back to it's original position (would have to deal with players overcranking tho, so maybe just best to lerp to current spot)\n\n",
                     "id": "k7kzs1loktfu2hpx5ohv1j3h"
@@ -37,5 +38,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1741551943612
+    "timestamp": 1741552096482
 }
