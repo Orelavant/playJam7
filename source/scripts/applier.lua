@@ -6,6 +6,8 @@ local gfx <const> = playdate.graphics
 local screenWidth, screenHeight = playdate.display.getSize()
 local halfScreenWidth, halfScreenHeight = screenWidth / 2, screenHeight / 2
 local condiments = { "pb", "honey" }
+local effectCondiments = { pb = true }
+local changeTemplate = { condiment = nil, crankChange = 0, cos = nil, sin = nil }
 
 class("Applier").extends(gfx.sprite)
 
@@ -16,7 +18,7 @@ function Applier:init(image)
 
 	-- move and apply
 	self.state = "move"
-	self.recordedChange = 0
+	self.changeTable = shallowcopy(changeTemplate)
 
 	-- pb and honey
 	self.iCondiment = 1
@@ -30,7 +32,7 @@ function Applier:move(moonX, moonY, moonRadius)
 		self:revolve(moonX, moonY, moonRadius)
 		self.targetApplied = false
 	elseif self.state == "apply" then
-		if condiments[self.iCondiment] == "pb" then
+		if self:getCurrCondiment() == "pb" then
 			self:moveStraight(moonX, moonY, moonRadius)
 		else
 			self:revolve(moonX, moonY, moonRadius)
@@ -53,7 +55,7 @@ end
 
 function Applier:recordChange()
 	if self.state == "apply" then
-		self.recordedChange += pd.getCrankChange()
+		self.changeTable["crankChange"] += pd.getCrankChange()
 	end
 end
 
@@ -86,18 +88,30 @@ end
 
 function Applier:setApplyState(moonX, moonY)
 	self.state = "apply"
-	if condiments[self.iCondiment] == "pb" then
+
+	-- If PB, set travel angle, and record that
+	if self:getCurrCondiment() == "pb" then
 		self:setLinearTarget(moonX, moonY)
+		self.changeTable["cos"] = self.cos
+		self.changeTable["sin"] = self.sin
 	end
+
+	-- Record current condiment
+	self.changeTable["condiment"] = self:getCurrCondiment()
 end
 
 function Applier:setMoveState(effectsTables)
+	-- Reset state
 	self.state = "move"
 	self.cos, self.sin = 0, 0
 
-	table.insert(effectsTables, self.recordedChange)
-	print(self.recordedChange)
-	self.recordedChange = 0
+	-- Insert into effectsTable if needed
+	if effectCondiments[self:getCurrCondiment()] then
+		table.insert(effectsTables, self.changeTable)
+	end
+
+	-- Reset recordedChange
+	self.changeTable = shallowcopy(changeTemplate)
 end
 
 function Applier:getCurrCondiment()
@@ -114,4 +128,8 @@ end
 
 function Applier:decrementCurrCondiment()
 	self.iCondiment = (self.iCondiment - 2) % #condiments + 1
+end
+
+function Applier:getState()
+	return self.state
 end

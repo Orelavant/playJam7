@@ -8,3 +8,11 @@ function getSourceTargetAngle(sourceX, sourceY, targetX, targetY)
 
 	return angle
 end
+
+function shallowcopy(table)
+	local copy = {}
+	for k, v in pairs(table) do
+		copy[k] = v
+	end
+	return copy
+end
