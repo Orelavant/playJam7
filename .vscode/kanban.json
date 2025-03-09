@@ -1,0 +1,37 @@
+{
+    "title": "Kanban",
+    "cols": [
+        {
+            "title": "Bugs",
+            "tasks": [],
+            "id": "a11rko3itb4okjv8jyfber7v",
+            "color": "#eb144c"
+        },
+        {
+            "title": "To-Do",
+            "tasks": [
+                {
+                    "text": "Exit draw state by returning the crank back to it's original position (would have to deal with players overcranking tho, so maybe just best to lerp to current spot)\n\n",
+                    "id": "k7kzs1loktfu2hpx5ohv1j3h"
+                }
+            ],
+            "id": "espw5f245uyloacsbl4e0kyn",
+            "color": "#fcb900"
+        },
+        {
+            "title": "Doing",
+            "tasks": [],
+            "id": "m16c14qsuqok5xy1o7ubju5k",
+            "color": "#0693e3"
+        },
+        {
+            "title": "Done",
+            "tasks": [],
+            "id": "pvc3feepx8bfa4ctntfkt15a",
+            "color": "#00d084"
+        }
+    ],
+    "autosave": true,
+    "saveToFile": true,
+    "timestamp": 1741466617006
+}

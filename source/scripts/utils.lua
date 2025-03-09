@@ -1,14 +1,10 @@
-local utils = {}
-
-function utils.getSourceTargetAngleComponents(sourceX, sourceY, targetX, targetY)
+function getSourceTargetAngleComponents(sourceX, sourceY, targetX, targetY)
 	local angle = math.atan(targetY - sourceY, targetX - sourceX)
 	return math.cos(angle), math.sin(angle)
 end
 
-function utils.getSourceTargetAngle(sourceX, sourceY, targetX, targetY)
+function getSourceTargetAngle(sourceX, sourceY, targetX, targetY)
 	local angle = math.atan(targetY - sourceY, targetX - sourceX)
 
 	return angle
 end
-
-return utils
